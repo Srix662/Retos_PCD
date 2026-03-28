@@ -75,4 +75,4 @@ def procesar_ventas(ruta_archivo):
         print(f"{prod},{unidades},{ingreso_total},{precio_promedio}")
 
 # 3. Ejecutar el procesador
-procesar_ventas('ventas.csv')
+procesar_ventas('entrada_prueba.txt')
