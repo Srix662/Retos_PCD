@@ -1,78 +1,67 @@
-# 1. Crear el archivo de prueba (como se indica en la última captura)
-datos_csv = """fecha,producto,cantidad,precio_unitario
-2023-01-01,Laptop,2,1500.00
-2023-01-02,Mouse,10,25.50
-2023-01-03,Laptop,1,1499.90
-2023-01-04,Teclado,5,85.00
-2023-01-05,Mouse,5,25.50"""
+import sys
 
-# 0. Aqui lo busque de internet por que no tenia ni la menor idea de como hacerlo. Aun no lo hemos visto
-with open('ventas.csv', 'w') as f:
-    f.write(datos_csv)
+def main():
+    # Diccionario para agrupar por producto
+    productos = {}
 
-# 2. Función principal para procesar las ventas
-def procesar_ventas(ruta_archivo):
-    productos = {} 
+    primera_linea = True
 
-    try:
-        with open(ruta_archivo, 'r') as archivo:
-            lineas = archivo.readlines()
-            
-        # Ignoramos la primera línea si es el encabezado
-        inicio = 1 if 'fecha' in lineas[0].lower() else 0
-        
-        for linea in lineas[inicio:]:
-            linea = linea.strip()
-            
-            # Regla 5: Ignorar líneas inválidas o vacías
-            if not linea:
-                continue 
-                
-            partes = linea.split(',')
-            if len(partes) != 4:
-                continue
-                
-            fecha, producto, cantidad_str, precio_str = partes
-            
-            try:
-                cantidad = int(cantidad_str)
-                precio = float(precio_str)
-            except ValueError:
-                continue
-                
-            ingreso = cantidad * precio
-            
-            # Regla 1: Agrupar por producto
-            if producto not in productos:
-                productos[producto] = {
-                    "unidades": 0,
-                    "ingreso": 0.0
-                }
-            
-            productos[producto]["unidades"] += cantidad
-            productos[producto]["ingreso"] += ingreso
-            
-    except FileNotFoundError:
-        print(f"Error: No se encontró el archivo {ruta_archivo}")
-        return
+    # Leer todas las lineas de la entrada estandar (stdin)
+    for linea in sys.stdin:
+        linea = linea.strip()
 
-    # Regla 2: Calcular el Precio Promedio
-    for prod, datos in productos.items():
-        if datos["unidades"] > 0:
-            datos["precio_promedio"] = datos["ingreso"] / datos["unidades"]
-        else:
-            datos["precio_promedio"] = 0.0
-        
-    # Regla 3: Ordenar por Ingreso Total
-    productos_ordenados = sorted(productos.items(), key=lambda x: x[1]["ingreso"], reverse=True)
-    
-    # Regla 4 y Especificación de Salida: Imprimir resultados con formato
+        # Saltar encabezado
+        if primera_linea:
+            primera_linea = False
+            continue
+
+        # Saltar lineas vacias
+        if not linea:
+            continue
+
+        # Parsear linea
+        partes = linea.split(',')
+        if len(partes) != 4:
+            continue # Ignorar lineas invalidas
+
+        fecha = partes[0]
+        producto = partes[1]
+
+        # Convertir cantidad y precio (con manejo de errores)
+        try:
+            cantidad = int(partes[2])
+            precio = float(partes[3])
+        except ValueError:
+            continue
+
+        # Si el producto no existe en el diccionario, inicializarlo
+        if producto not in productos:
+            productos[producto] = {
+                "unidades": 0,
+                "ingreso": 0.0
+            }
+
+        # Acumular
+        productos[producto]["unidades"] += cantidad
+        productos[producto]["ingreso"] += cantidad * precio
+
+    # Calcular precio promedio
+    for prod in productos:
+        unidades = productos[prod]["unidades"]
+        ingreso = productos[prod]["ingreso"]
+        productos[prod]['promedio'] = ingreso / unidades if unidades > 0 else 0
+
+    # Ordenar por ingreso descendente
+    productos_ordenados = sorted(
+        productos.items(),
+        key=lambda x: x[1]["ingreso"],
+        reverse=True
+    )
+
+    # Imprimir salida (stdout)
     print("producto,unidades_vendidas,ingreso_total,precio_promedio")
-    for prod, datos in productos_ordenados:
-        unidades = datos["unidades"]
-        ingreso_total = f"{datos['ingreso']:.2f}"
-        precio_promedio = f"{datos['precio_promedio']:.2f}"
-        print(f"{prod},{unidades},{ingreso_total},{precio_promedio}")
+    for nombre, datos in productos_ordenados:
+        print(f"{nombre},{datos['unidades']},{datos['ingreso']:.2f},{datos['promedio']:.2f}")
 
-# 3. Ejecutar el procesador
-procesar_ventas('entrada_prueba.txt')
+if __name__ == "__main__":
+    main()
