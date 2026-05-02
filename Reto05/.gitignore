@@ -1,0 +1,22 @@
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# Outputs generados
+outputs/*.csv
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+
+# Ignorar los archivos generados, pero mantener la carpeta
+outputs/*
+!outputs/.gitkeep
