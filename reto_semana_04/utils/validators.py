@@ -7,6 +7,10 @@ def validar_sku(sku):
 def validar_precio(precio):
     try:
         precio_num = float(precio)
+        
+        if str(precio_num).lower() in ['inf', '-inf', 'nan']:
+            return False
+            
         return precio_num >= 0
     except (ValueError, TypeError):
         return False
